@@ -16,6 +16,7 @@ dependencies {
     compile 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     compile 'commons-io:commons-io:2.5'
     compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.24'
+    compile 'redis.clients:jedis:2.9.0'
     testCompile 'junit:junit:4.12'
 }
 
@@ -23,4 +24,3 @@ war {
     from 'src/main/java'
     webXml = file('src/main/webapp/web.xml')
 }
-
