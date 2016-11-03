@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app 
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" 
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <display-name>Redynis Service</display-name>
+    <description>
+      This is a service to enable an HTTP endpoint to a Redis client
+    </description>
+
+    <context-param>
+      <param-name>ConfigFile</param-name>
+      <param-value></param-value>
+      <description>
+        Global config file for the service
+      </description>
+    </context-param>
+
+
+    <servlet>
+      <servlet-name>Redynis Web Application</servlet-name>
+      <description>
+      </description>
+      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+      <init-param>
+        <param-name>listOrders</param-name>
+        <param-value>com.mycompany.myactions.ListOrdersAction</param-value>
+      </init-param>
+      <!-- Load this servlet at server startup time -->
+      <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+      <servlet-name>Redynis Web Application</servlet-name>
+      <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

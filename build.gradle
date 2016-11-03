@@ -1,0 +1,26 @@
+apply plugin: 'java'
+apply plugin: 'war'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.logging.log4j:log4j-api:2.7'
+    compile 'org.apache.logging.log4j:log4j-core:2.7'
+    compile 'args4j:args4j:2.33'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.projectlombok:lombok:1.16.10'
+    compile 'org.apache.commons:commons-lang3:3.5'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.6.3'
+    compile 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
+    compile 'commons-io:commons-io:2.5'
+    compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.24'
+    testCompile 'junit:junit:4.12'
+}
+
+war {
+    from 'src/main/java'
+    webXml = file('src/main/webapp/web.xml')
+}
+
