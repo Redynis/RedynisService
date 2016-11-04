@@ -1,0 +1,41 @@
+{
+    "configuration": {
+        "appenders": {
+            "appender": [
+                {
+                    "type": "Routing",
+                    "name": "Routing",
+                    "Routes": {
+                        "pattern": "$${sd:type}",
+                        "Route": [
+                            {
+                                "RollingFile": {
+                                    "name": "Rolling",
+                                    "fileName": "/home/v2john/IdeaProjects/logs/RedynisService.log",
+                                    "filePattern": "/home/v2john/IdeaProjects/logs/RedynisService.log.%d{yyyy-MM-dd}",
+                                    "policies": {
+                                        "TimeBasedTriggeringPolicy": {
+                                            "interval": 1
+                                        }
+                                    },
+                                    "PatternLayout": {
+                                        "pattern": "%d{HH:mm:ss.SSS} [%t] %p %c{3} - %m%n"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "loggers": {
+            "logger": {
+                "name": "RedynisServiceLogger",
+                "level": "debug",
+                "AppenderRef": {
+                    "ref": "Routing"
+                }
+            }
+        }
+    }
+}

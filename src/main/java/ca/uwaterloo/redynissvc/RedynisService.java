@@ -6,6 +6,8 @@ import ca.uwaterloo.redynissvc.serviceobjects.PostSuccess;
 import ca.uwaterloo.redynissvc.utlis.Constants;
 import ca.uwaterloo.redynissvc.utlis.RedisHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -14,12 +16,16 @@ import javax.ws.rs.core.Response;
 @Produces("application/json")
 public class RedynisService
 {
+    private static Logger log = LogManager.getLogger("RedynisServiceLogger");
+
     @GET()
 	public Response GetRedisData(
         @QueryParam("key") String redisKey
     )
         throws JsonProcessingException
     {
+        log.debug("Received request");
+
         InternalServerError error;
         if(null == redisKey)
         {
