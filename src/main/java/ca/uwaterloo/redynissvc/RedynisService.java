@@ -3,6 +3,7 @@ package ca.uwaterloo.redynissvc;
 import ca.uwaterloo.redynissvc.exceptions.InternalServerError;
 import ca.uwaterloo.redynissvc.serviceobjects.KeyValue;
 import ca.uwaterloo.redynissvc.serviceobjects.PostSuccess;
+import ca.uwaterloo.redynissvc.threads.CaptureMetrics;
 import ca.uwaterloo.redynissvc.utlis.Constants;
 import ca.uwaterloo.redynissvc.utlis.RedisHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,6 +35,8 @@ public class RedynisService
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Constants.objectMapper.writeValueAsString(error)).build();
         }
+
+        CaptureMetrics captureMetrics = new CaptureMetrics(redisKey);
 
         RedisHelper redisHelper = RedisHelper.getInstance();
         String redisValue = redisHelper.getValue(redisKey);
