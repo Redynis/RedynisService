@@ -4,8 +4,8 @@ import ca.uwaterloo.redynissvc.exceptions.InternalServerError;
 import ca.uwaterloo.redynissvc.serviceobjects.KeyValue;
 import ca.uwaterloo.redynissvc.serviceobjects.PostSuccess;
 import ca.uwaterloo.redynissvc.threads.CaptureMetrics;
-import ca.uwaterloo.redynissvc.utlis.Constants;
-import ca.uwaterloo.redynissvc.utlis.RedisHelper;
+import ca.uwaterloo.redynissvc.utils.Constants;
+import ca.uwaterloo.redynissvc.utils.RedisHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,24 +25,25 @@ public class RedynisService
     )
         throws JsonProcessingException
     {
-        log.debug("Received request");
+        log.debug("Received GET request");
 
         InternalServerError error;
-        if(null == redisKey)
+        if (null == redisKey)
         {
             error = new InternalServerError("Key cannot be null/empty", this.getClass().getName());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Constants.objectMapper.writeValueAsString(error)).build();
+                    .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
 
         CaptureMetrics captureMetrics = new CaptureMetrics(redisKey);
+        captureMetrics.start();
 
         RedisHelper redisHelper = RedisHelper.getInstance();
         String redisValue = redisHelper.getValue(redisKey);
 
         KeyValue keyValue = new KeyValue(redisKey, redisValue);
-        return Response.ok(Constants.objectMapper.writeValueAsString(keyValue)).build();
+        return Response.ok(Constants.MAPPER.writeValueAsString(keyValue)).build();
     }
 
     @POST
@@ -52,26 +53,28 @@ public class RedynisService
     )
         throws JsonProcessingException
     {
+        log.debug("Received POST request");
+
         InternalServerError error;
-        if(null == redisKey)
+        if (null == redisKey)
         {
             error = new InternalServerError("Key cannot be null/empty", this.getClass().getName());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Constants.objectMapper.writeValueAsString(error)).build();
+                    .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
-        if(null == redisValue)
+        if (null == redisValue)
         {
             error = new InternalServerError("Value cannot be null/empty", this.getClass().getName());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Constants.objectMapper.writeValueAsString(error)).build();
+                    .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
 
 
         RedisHelper redisHelper = RedisHelper.getInstance();
         redisHelper.setValue(redisKey, redisValue);
 
-        return Response.ok(Constants.objectMapper.writeValueAsString(new PostSuccess(true))).build();
+        return Response.ok(Constants.MAPPER.writeValueAsString(new PostSuccess(true))).build();
     }
 }

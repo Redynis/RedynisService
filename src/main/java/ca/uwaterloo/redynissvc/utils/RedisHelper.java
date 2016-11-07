@@ -1,4 +1,4 @@
-package ca.uwaterloo.redynissvc.utlis;
+package ca.uwaterloo.redynissvc.utils;
 
 import redis.clients.jedis.Jedis;
 
@@ -9,7 +9,7 @@ public class RedisHelper
 
     public static RedisHelper getInstance()
     {
-        if(null == instance)
+        if (null == instance)
         {
             instance = new RedisHelper("localhost", 6379);
         }
