@@ -1,0 +1,7 @@
+{
+    "applicatonName": "RedynisService",
+    "dataLayerHost": "localhost",
+    "dataLayerPort": 6379,
+    "metadataLayerHost": "localhost",
+    "metadataLayerPort": 6380
+}

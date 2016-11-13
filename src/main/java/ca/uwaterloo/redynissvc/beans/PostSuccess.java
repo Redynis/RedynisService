@@ -1,4 +1,4 @@
-package ca.uwaterloo.redynissvc.serviceobjects;
+package ca.uwaterloo.redynissvc.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PUBLIC)
 @Setter(value = AccessLevel.PRIVATE)
-@ToString()
+@ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSuccess
 {

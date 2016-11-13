@@ -12,13 +12,12 @@
     </description>
 
     <context-param>
-      <param-name>ConfigFile</param-name>
-      <param-value></param-value>
-      <description>
-        Global config file for the service
-      </description>
+        <param-name>ConfigFile</param-name>
+        <param-value>/home/v2john/IdeaProjects/RedynisService/src/main/resources/RedynisServiceConfig.json</param-value>
+        <description>
+            Global config file for the service
+        </description>
     </context-param>
-
 
     <servlet>
       <servlet-name>redynis</servlet-name>

@@ -1,9 +1,11 @@
 package ca.uwaterloo.redynissvc;
 
+import ca.uwaterloo.redynissvc.beans.ServiceConfig;
 import ca.uwaterloo.redynissvc.exceptions.InternalServerError;
-import ca.uwaterloo.redynissvc.serviceobjects.KeyValue;
-import ca.uwaterloo.redynissvc.serviceobjects.PostSuccess;
+import ca.uwaterloo.redynissvc.beans.KeyValue;
+import ca.uwaterloo.redynissvc.beans.PostSuccess;
 import ca.uwaterloo.redynissvc.threads.CaptureMetrics;
+import ca.uwaterloo.redynissvc.utils.ConfigHelper;
 import ca.uwaterloo.redynissvc.utils.Constants;
 import ca.uwaterloo.redynissvc.utils.RedisHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,19 +13,31 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.servlet.ServletContext;
+import java.io.IOException;
 
 @Path("/redis")
 @Produces("application/json")
-public class RedynisService
+public class RedynisService extends Application
 {
     private static Logger log = LogManager.getLogger("RedynisServiceLogger");
+    private ServiceConfig serviceConfig;
 
-    @GET()
+    public RedynisService(@Context ServletContext context)
+        throws IOException
+    {
+        String configFilePath = context.getInitParameter(Constants.CONFIGFILE_PARAM);
+        serviceConfig = ConfigHelper.getInstance(configFilePath).getServiceConfig();
+    }
+
+    @GET
 	public Response GetRedisData(
         @QueryParam("key") String redisKey
     )
-        throws JsonProcessingException
+        throws IOException
     {
         log.debug("Received GET request");
 
@@ -36,10 +50,11 @@ public class RedynisService
                     .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
 
-        CaptureMetrics captureMetrics = new CaptureMetrics(redisKey);
+        CaptureMetrics captureMetrics = new CaptureMetrics(serviceConfig, redisKey);
         captureMetrics.start();
 
-        RedisHelper redisHelper = RedisHelper.getInstance();
+        RedisHelper redisHelper =
+            RedisHelper.getInstance(serviceConfig.getDataLayerHost(), serviceConfig.getDataLayerPort());
         String redisValue = redisHelper.getValue(redisKey);
 
         KeyValue keyValue = new KeyValue(redisKey, redisValue);
@@ -72,7 +87,7 @@ public class RedynisService
         }
 
 
-        RedisHelper redisHelper = RedisHelper.getInstance();
+        RedisHelper redisHelper = RedisHelper.getInstance(serviceConfig.getDataLayerHost(), serviceConfig.getDataLayerPort());
         redisHelper.setValue(redisKey, redisValue);
 
         return Response.ok(Constants.MAPPER.writeValueAsString(new PostSuccess(true))).build();

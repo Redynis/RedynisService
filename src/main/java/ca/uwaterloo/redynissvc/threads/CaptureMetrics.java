@@ -1,6 +1,7 @@
 package ca.uwaterloo.redynissvc.threads;
 
-import ca.uwaterloo.redynissvc.serviceobjects.UsageMetric;
+import ca.uwaterloo.redynissvc.beans.ServiceConfig;
+import ca.uwaterloo.redynissvc.beans.UsageMetric;
 import ca.uwaterloo.redynissvc.utils.Constants;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class CaptureMetrics extends Thread
 {
+    private ServiceConfig serviceConfig;
     private String redisKey;
     private static Logger log = LogManager.getLogger("RedynisServiceLogger");
 
@@ -27,7 +29,7 @@ public class CaptureMetrics extends Thread
         {
             log.debug("Capturing metrics");
 
-            Jedis jedis = new Jedis("localhost", 6380);
+            Jedis jedis = new Jedis(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
             String usageMetricsString = jedis.get(redisKey);
 
             String hostname = InetAddress.getLocalHost().getHostName();

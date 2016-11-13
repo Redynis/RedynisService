@@ -7,11 +7,11 @@ public class RedisHelper
     private static RedisHelper instance;
     private Jedis jedis;
 
-    public static RedisHelper getInstance()
+    public static RedisHelper getInstance(String host, Integer port)
     {
         if (null == instance)
         {
-            instance = new RedisHelper("localhost", 6379);
+            instance = new RedisHelper(host, port);
         }
         return instance;
     }
