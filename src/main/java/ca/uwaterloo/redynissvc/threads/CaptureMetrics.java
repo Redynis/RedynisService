@@ -9,10 +9,7 @@ import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @AllArgsConstructor
@@ -20,7 +17,7 @@ public class CaptureMetrics extends Thread
 {
     private ServiceConfig serviceConfig;
     private String redisKey;
-    private static Logger log = LogManager.getLogger("RedynisServiceLogger");
+    private static Logger log = LogManager.getLogger(CaptureMetrics.class);
 
     @Override
     public void run()
@@ -38,7 +35,7 @@ public class CaptureMetrics extends Thread
             {
                 Integer totalAccessCount = 1;
 
-                List<String> hosts = new ArrayList<>();
+                Set<String> hosts = new HashSet<>();
                 hosts.add(hostname);
 
                 Map<String, Integer> hostAccesses = new HashMap<>();

@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -15,6 +16,6 @@ import java.util.Map;
 public class UsageMetric
 {
     private Integer totalAccessCount;
-    private List<String> hosts;
+    private Set<String> hosts;
     private Map<String, Integer> hostAccesses;
 }

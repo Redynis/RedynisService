@@ -29,8 +29,7 @@
             ]
         },
         "loggers": {
-            "logger": {
-                "name": "RedynisServiceLogger",
+            "root": {
                 "level": "debug",
                 "AppenderRef": {
                     "ref": "Routing"
