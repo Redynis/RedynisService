@@ -1,24 +1,28 @@
 package ca.uwaterloo.redynissvc;
 
-import ca.uwaterloo.redynissvc.beans.ServiceConfig;
-import ca.uwaterloo.redynissvc.exceptions.InternalServerError;
 import ca.uwaterloo.redynissvc.beans.KeyValue;
 import ca.uwaterloo.redynissvc.beans.PostSuccess;
+import ca.uwaterloo.redynissvc.beans.ServiceConfig;
+import ca.uwaterloo.redynissvc.beans.UsageMetric;
+import ca.uwaterloo.redynissvc.exceptions.InternalServerError;
 import ca.uwaterloo.redynissvc.threads.CaptureMetrics;
 import ca.uwaterloo.redynissvc.utils.ConfigHelper;
 import ca.uwaterloo.redynissvc.utils.Constants;
 import ca.uwaterloo.redynissvc.utils.DataLocator;
 import ca.uwaterloo.redynissvc.utils.RedisHelper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.servlet.ServletContext;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 @Path("/redis")
 @Produces("application/json")
@@ -73,7 +77,7 @@ public class RedynisService extends Application
         @QueryParam("key") String redisKey,
         @QueryParam("value") String redisValue
     )
-        throws JsonProcessingException
+        throws IOException
     {
         log.debug("Received POST request");
 
@@ -93,8 +97,35 @@ public class RedynisService extends Application
                     .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
 
-        RedisHelper redisHelper = new RedisHelper(serviceConfig.getDataLayerHost(), serviceConfig.getDataLayerPort());
-        redisHelper.setValue(redisKey, redisValue);
+        DataLocator dataLocator = DataLocator.getInstance(serviceConfig);
+        Set<String> hosts = dataLocator.locateDataHosts(redisKey);
+
+        if (null == hosts)
+        {
+            Integer totalAccessCount = 0;
+            hosts = new HashSet<>();
+            hosts.add(InetAddress.getLocalHost().getCanonicalHostName());
+
+            UsageMetric usageMetric = new UsageMetric(totalAccessCount, hosts, new HashMap<>());
+
+            RedisHelper redisHelper =
+                new RedisHelper(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
+            redisHelper.setValue(redisKey, Constants.MAPPER.writeValueAsString(usageMetric));
+        }
+
+        log.debug("Hosts with key: " + hosts);
+        for (String host: hosts)
+        {
+            try
+            {
+                RedisHelper redisHelper = new RedisHelper(host, serviceConfig.getDataLayerPort());
+                redisHelper.setValue(redisKey, redisValue);
+            }
+            catch (Exception e)
+            {
+                log.error("Unable to post to " + host, e);
+            }
+        }
 
         return Response.ok(Constants.MAPPER.writeValueAsString(new PostSuccess(true))).build();
     }

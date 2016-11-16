@@ -12,7 +12,7 @@ public class NetworkAddressTest
     public void testGetHostName()
         throws UnknownHostException
     {
-        String hostname = InetAddress.getLocalHost().getHostName();
-        Assert.assertEquals(hostname, "scs555pc");
+        System.out.println(InetAddress.getLocalHost().getHostName());
+        System.out.println(InetAddress.getLocalHost().getCanonicalHostName());
     }
 }

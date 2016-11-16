@@ -21,7 +21,11 @@ public class DataLocator
     {
         if (null == instance)
         {
-            Jedis jedisInstance = new Jedis(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
+            Jedis jedisInstance =
+                new Jedis(
+                    serviceConfig.getMetadataLayerHost(),
+                    serviceConfig.getMetadataLayerPort()
+                );
             instance = new DataLocator(jedisInstance);
         }
 
@@ -37,14 +41,11 @@ public class DataLocator
         throws IOException
     {
         String hostname = null;
-        String localHostname = InetAddress.getLocalHost().getHostName();
+        String localHostname = InetAddress.getLocalHost().getCanonicalHostName();
 
-        String metadata = jedis.get(key);
-        if (null != metadata)
+        Set<String> hosts = locateDataHosts(key);
+        if (null != hosts)
         {
-            UsageMetric usageMetric = Constants.MAPPER.readValue(metadata, UsageMetric.class);
-
-            Set<String> hosts = usageMetric.getHosts();
             if (hosts.contains(localHostname))
             {
                 hostname = localHostname;
@@ -57,5 +58,20 @@ public class DataLocator
 
         log.debug("Host where " + key + " is located: " + hostname);
         return hostname;
+    }
+
+    public Set<String> locateDataHosts(String key)
+        throws IOException
+    {
+        Set<String> hosts = null;
+
+        String metadata = jedis.get(key);
+        if (null != metadata)
+        {
+            UsageMetric usageMetric = Constants.MAPPER.readValue(metadata, UsageMetric.class);
+            hosts = usageMetric.getHosts();
+        }
+
+        return hosts;
     }
 }
