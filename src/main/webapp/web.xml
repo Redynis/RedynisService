@@ -13,7 +13,7 @@
 
     <context-param>
         <param-name>ConfigFile</param-name>
-        <param-value>/home/v2john/IdeaProjects/RedynisService/src/main/resources/RedynisServiceConfig.json</param-value>
+        <param-value>/etc/Redynis/RedynisServiceConfig.json</param-value>
         <description>
             Global config file for the service
         </description>
