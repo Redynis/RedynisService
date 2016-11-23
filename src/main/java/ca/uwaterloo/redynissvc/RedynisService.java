@@ -42,7 +42,7 @@ public class RedynisService extends Application
 	public Response GetRedisData(
         @QueryParam("key") String redisKey
     )
-        throws IOException
+        throws IOException, InterruptedException
     {
         log.debug("Received GET request");
 
@@ -104,7 +104,7 @@ public class RedynisService extends Application
         {
             Integer totalAccessCount = 0;
             hosts = new HashSet<>();
-            hosts.add(InetAddress.getLocalHost().getCanonicalHostName());
+            hosts.add(serviceConfig.getDataLayerHost());
 
             UsageMetric usageMetric = new UsageMetric(totalAccessCount, hosts, new HashMap<>());
 

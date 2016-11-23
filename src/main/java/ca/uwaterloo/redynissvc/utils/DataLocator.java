@@ -38,7 +38,7 @@ public class DataLocator
     }
 
     public String locateDataHost(String key)
-        throws IOException
+        throws IOException, InterruptedException
     {
         String hostname = null;
         String localHostname = InetAddress.getLocalHost().getCanonicalHostName();
@@ -52,6 +52,7 @@ public class DataLocator
             }
             else
             {
+                Thread.sleep(1000);  // inducing false latency to simulate remote node
                 hostname = hosts.iterator().next();
             }
         }
