@@ -52,7 +52,7 @@ public class DataLocator
             }
             else
             {
-                Thread.sleep(1000);  // inducing false latency to simulate remote node
+                Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC);  // inducing false latency to simulate remote node
                 hostname = hosts.iterator().next();
             }
         }

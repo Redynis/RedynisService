@@ -77,7 +77,7 @@ public class RedynisService extends Application
         @QueryParam("key") String redisKey,
         @QueryParam("value") String redisValue
     )
-        throws IOException
+        throws IOException, InterruptedException
     {
         log.debug("Received POST request");
 
@@ -116,6 +116,10 @@ public class RedynisService extends Application
         log.debug("Hosts with key: " + hosts);
         for (String host: hosts)
         {
+            if (!host.equals(InetAddress.getLocalHost().getCanonicalHostName()))
+            {
+                Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC);
+            }
             try
             {
                 RedisHelper redisHelper = new RedisHelper(host, serviceConfig.getDataLayerPort());
