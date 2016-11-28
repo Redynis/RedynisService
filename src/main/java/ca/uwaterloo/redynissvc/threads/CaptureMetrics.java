@@ -43,7 +43,9 @@ public class CaptureMetrics extends Thread
 
                 jedis.set(
                     redisKey,
-                    Constants.MAPPER.writeValueAsString(new UsageMetric(totalAccessCount, hosts, hostAccesses))
+                    Constants.MAPPER.writeValueAsString(
+                        new UsageMetric(totalAccessCount, hosts, hostAccesses, new Date())
+                    )
                 );
             }
             else
@@ -59,7 +61,8 @@ public class CaptureMetrics extends Thread
                     new UsageMetric(
                         oldUsageMetric.getTotalAccessCount() + 1,
                         oldUsageMetric.getHosts(),
-                        hostAccesses
+                        hostAccesses,
+                        new Date()
                     );
 
                 jedis.set(

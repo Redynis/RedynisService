@@ -3,6 +3,7 @@ package ca.uwaterloo.redynissvc.beans;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,4 +19,5 @@ public class UsageMetric
     private Integer totalAccessCount;
     private Set<String> hosts;
     private Map<String, Integer> hostAccesses;
+    private Date lastAccessedDate;
 }

@@ -9,7 +9,7 @@ public class GetValue
     @Test
     public void testGetValue()
     {
-        RedisHelper redisHelper = new RedisHelper("localhost", 6379);
-        redisHelper.getValue("vineet");
+        RedisHelper.init("localhost", 6379);
+        RedisHelper.getValue("vineet");
     }
 }

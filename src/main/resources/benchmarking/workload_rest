@@ -38,8 +38,8 @@ insertproportion=0
 updateproportion=0
 deleteproportion=0
 requestdistribution=zipfian
-operationcount=100
-maxexecutiontime=720
+operationcount=10000
+maxexecutiontime=7200
 
 #	Custom Properties
 url.prefix=http://localhost:8080/RedynisService/
@@ -55,8 +55,8 @@ timeout.exec=60
 log.enable=false
 readrecordcount=10000
 insertrecordcount=5000
-readzipfconstant=0.9
-insertzipfconstant=0.9
+#readzipfconstant=0.9
+#insertzipfconstant=0.9
 
 #	Measurement Properties
 hdrhistogram.percentiles=50,90,95,99

@@ -10,8 +10,15 @@ import ca.uwaterloo.redynissvc.utils.ConfigHelper;
 import ca.uwaterloo.redynissvc.utils.Constants;
 import ca.uwaterloo.redynissvc.utils.DataLocator;
 import ca.uwaterloo.redynissvc.utils.RedisHelper;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import redis.clients.jedis.Jedis;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.*;
@@ -20,9 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Path("/redis")
 @Produces("application/json")
@@ -30,17 +35,19 @@ public class RedynisService extends Application
 {
     private static Logger log = LogManager.getLogger(RedynisService.class);
     private ServiceConfig serviceConfig;
+    private HttpClient httpClient = HttpClientBuilder.create().build();
 
     public RedynisService(@Context ServletContext context)
         throws IOException
     {
         String configFilePath = context.getInitParameter(Constants.CONFIGFILE_PARAM);
         serviceConfig = ConfigHelper.getInstance(configFilePath).getServiceConfig();
+        RedisHelper.init(serviceConfig.getDataLayerHost(), serviceConfig.getDataLayerPort());
     }
 
     @GET
 	public Response GetRedisData(
-        @QueryParam("key") String redisKey
+        @QueryParam(Constants.KEY_PARAM) String redisKey
     )
         throws IOException, InterruptedException
     {
@@ -64,8 +71,8 @@ public class RedynisService extends Application
         String redisValue = null;
         if(null != host)
         {
-            RedisHelper redisHelper = new RedisHelper(host, serviceConfig.getDataLayerPort());
-            redisValue = redisHelper.getValue(redisKey);
+            Jedis jedis = new Jedis(host, serviceConfig.getDataLayerPort());
+            redisValue = jedis.get(redisKey);
         }
 
         KeyValue keyValue = new KeyValue(redisKey, redisValue);
@@ -74,8 +81,8 @@ public class RedynisService extends Application
 
     @POST
     public Response SetRedisData(
-        @QueryParam("key") String redisKey,
-        @QueryParam("value") String redisValue
+        @QueryParam(Constants.KEY_PARAM) String redisKey,
+        @QueryParam(Constants.VALUE_PARAM) String redisValue
     )
         throws IOException, InterruptedException
     {
@@ -106,24 +113,33 @@ public class RedynisService extends Application
             hosts = new HashSet<>();
             hosts.add(serviceConfig.getDataLayerHost());
 
-            UsageMetric usageMetric = new UsageMetric(totalAccessCount, hosts, new HashMap<>());
-
-            RedisHelper redisHelper =
-                new RedisHelper(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
-            redisHelper.setValue(redisKey, Constants.MAPPER.writeValueAsString(usageMetric));
+            UsageMetric usageMetric =
+                new UsageMetric(totalAccessCount, hosts, new HashMap<>(), new Date());
+            RedisHelper.setValue(redisKey, Constants.MAPPER.writeValueAsString(usageMetric));
         }
 
         log.debug("Hosts with key: " + hosts);
         for (String host: hosts)
         {
-            if (!host.equals(InetAddress.getLocalHost().getCanonicalHostName()))
-            {
-                Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC);
-            }
             try
             {
-                RedisHelper redisHelper = new RedisHelper(host, serviceConfig.getDataLayerPort());
-                redisHelper.setValue(redisKey, redisValue);
+                if (host.equals(InetAddress.getLocalHost().getCanonicalHostName()))
+                {
+                    RedisHelper.setValue(redisKey, redisValue);
+                }
+                else
+                {
+                    Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
+                    HttpPost post = new HttpPost(Constants.SERVICE_ENDPOINT);
+
+                    List<NameValuePair> urlParameters = new ArrayList<>();
+                    urlParameters.add(new BasicNameValuePair(Constants.KEY_PARAM, redisKey));
+                    urlParameters.add(new BasicNameValuePair(Constants.VALUE_PARAM, redisValue));
+
+                    post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+                    httpClient.execute(post);
+                }
             }
             catch (Exception e)
             {
