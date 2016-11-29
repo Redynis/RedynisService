@@ -8,6 +8,7 @@ import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Set;
 
 public class DataLocator
@@ -18,12 +19,13 @@ public class DataLocator
     private static Logger log = LogManager.getLogger(DataLocator.class);
 
     public static DataLocator getInstance(ServiceConfig serviceConfig)
+        throws UnknownHostException
     {
         if (null == instance)
         {
             Jedis jedisInstance =
                 new Jedis(
-                    serviceConfig.getMetadataLayerHost(),
+                    InetAddress.getLocalHost().getCanonicalHostName(),
                     serviceConfig.getMetadataLayerPort()
                 );
             instance = new DataLocator(jedisInstance);

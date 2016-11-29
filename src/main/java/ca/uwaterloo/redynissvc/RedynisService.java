@@ -42,7 +42,7 @@ public class RedynisService extends Application
     {
         String configFilePath = context.getInitParameter(Constants.CONFIGFILE_PARAM);
         serviceConfig = ConfigHelper.getInstance(configFilePath).getServiceConfig();
-        RedisHelper.init(serviceConfig.getDataLayerHost(), serviceConfig.getDataLayerPort());
+        RedisHelper.init(InetAddress.getLocalHost().getCanonicalHostName(), serviceConfig.getDataLayerPort());
     }
 
     @GET
@@ -111,7 +111,7 @@ public class RedynisService extends Application
         {
             Integer totalAccessCount = 0;
             hosts = new HashSet<>();
-            hosts.add(serviceConfig.getDataLayerHost());
+            hosts.add(InetAddress.getLocalHost().getCanonicalHostName());
 
             UsageMetric usageMetric =
                 new UsageMetric(totalAccessCount, hosts, new HashMap<>(), new Date());
@@ -119,32 +119,26 @@ public class RedynisService extends Application
         }
 
         log.debug("Hosts with key: " + hosts);
-        for (String host: hosts)
+        if (hosts.size() == 1 && hosts.iterator().next().equals(InetAddress.getLocalHost().getCanonicalHostName()))
         {
-            try
-            {
-                if (host.equals(InetAddress.getLocalHost().getCanonicalHostName()))
-                {
-                    RedisHelper.setValue(redisKey, redisValue);
-                }
-                else
-                {
-                    Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
-                    HttpPost post = new HttpPost(Constants.SERVICE_ENDPOINT);
+            RedisHelper.setValue(redisKey, redisValue);
+        }
+        else if (serviceConfig.getMasterPropagator().equals(InetAddress.getLocalHost().getCanonicalHostName()))
+        {
+            RedisHelper.setValueAtMultipleHosts(redisKey, redisValue, hosts, serviceConfig.getDataLayerPort());
+        }
+        else
+        {
+            Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
+            HttpPost post = new HttpPost(Constants.SERVICE_ENDPOINT);
 
-                    List<NameValuePair> urlParameters = new ArrayList<>();
-                    urlParameters.add(new BasicNameValuePair(Constants.KEY_PARAM, redisKey));
-                    urlParameters.add(new BasicNameValuePair(Constants.VALUE_PARAM, redisValue));
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair(Constants.KEY_PARAM, redisKey));
+            urlParameters.add(new BasicNameValuePair(Constants.VALUE_PARAM, redisValue));
 
-                    post.setEntity(new UrlEncodedFormEntity(urlParameters));
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
 
-                    httpClient.execute(post);
-                }
-            }
-            catch (Exception e)
-            {
-                log.error("Unable to post to " + host, e);
-            }
+            httpClient.execute(post);
         }
 
         return Response.ok(Constants.MAPPER.writeValueAsString(new PostSuccess(true))).build();

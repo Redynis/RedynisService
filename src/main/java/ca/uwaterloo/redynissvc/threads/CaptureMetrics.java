@@ -26,7 +26,8 @@ public class CaptureMetrics extends Thread
         {
             log.debug("Capturing metrics");
 
-            Jedis jedis = new Jedis(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
+            Jedis jedis =
+                new Jedis(InetAddress.getLocalHost().getCanonicalHostName(), serviceConfig.getMetadataLayerPort());
             String usageMetricsString = jedis.get(redisKey);
 
             String hostname = InetAddress.getLocalHost().getHostName();
@@ -59,10 +60,8 @@ public class CaptureMetrics extends Thread
 
                 UsageMetric newUsageMetric =
                     new UsageMetric(
-                        oldUsageMetric.getTotalAccessCount() + 1,
-                        oldUsageMetric.getHosts(),
-                        hostAccesses,
-                        new Date()
+                        oldUsageMetric.getTotalAccessCount() + 1, oldUsageMetric.getHosts(),
+                        hostAccesses, new Date()
                     );
 
                 jedis.set(

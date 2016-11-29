@@ -12,8 +12,7 @@ import lombok.*;
 public class ServiceConfig
 {
     private String applicatonName;
-    private String dataLayerHost;
     private Integer dataLayerPort;
-    private String metadataLayerHost;
     private Integer metadataLayerPort;
+    private String masterPropagator;
 }
