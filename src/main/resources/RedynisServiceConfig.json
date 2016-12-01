@@ -1,8 +1,8 @@
 {
     "applicatonName": "RedynisService",
-    "dataLayerHost": "scs555pc",
+    "dataLayerHost": "129.97.169.185",
     "dataLayerPort": 6379,
-    "metadataLayerHost": "scs555pc",
+    "metadataLayerHost": "129.97.169.185",
     "metadataLayerPort": 6380,
-    "masterPropagator": "scs555pc"
+    "masterPropagator": "129.97.169.185"
 }

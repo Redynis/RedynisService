@@ -11,6 +11,9 @@ public class Constants
     public static final String KEY_PARAM = "key";
     public static final String VALUE_PARAM = "value";
 
-    public static final String SERVICE_ENDPOINT = "http://scs555pc:8080/RedynisService/redis";
+    public static final String KEY_PLACEHOLDER = "__KEY__";
+    public static final String VALUE_PLACEHOLDER = "__VALUE__";
 
+    public static final String SERVICE_ENDPOINT =
+        "http://129.97.169.185:8080/RedynisService/redis?key=" + KEY_PLACEHOLDER + "&value=" + VALUE_PLACEHOLDER;
 }

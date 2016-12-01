@@ -13,6 +13,7 @@ public class ServiceConfig
 {
     private String applicatonName;
     private Integer dataLayerPort;
+    private String metadataLayerHost;
     private Integer metadataLayerPort;
     private String masterPropagator;
 }

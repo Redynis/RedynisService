@@ -26,7 +26,8 @@
 workload=com.yahoo.ycsb.workloads.RestWorkload
 db=com.yahoo.ycsb.webservice.rest.RestClient
 exporter=com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter
-threadcount=1
+threadcount=100
+target=10000
 fieldlengthdistribution=uniform
 measurementtype=hdrhistogram
 
@@ -38,11 +39,11 @@ insertproportion=0
 updateproportion=0
 deleteproportion=0
 requestdistribution=zipfian
-operationcount=10000
+operationcount=100000
 maxexecutiontime=7200
 
 #	Custom Properties
-url.prefix=http://localhost:8080/RedynisService/
+url.prefix=http://scs555pc:8080/RedynisService/
 url.trace.read=/home/v2john/tools/YCSB/workloads/readtrace.txt
 url.trace.insert=/home/v2john/tools/YCSB/workloads/inserttrace.txt
 url.trace.update=/home/v2john/tools/YCSB/workloads/readtrace.txt

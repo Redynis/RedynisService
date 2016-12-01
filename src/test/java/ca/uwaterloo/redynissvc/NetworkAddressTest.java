@@ -13,6 +13,6 @@ public class NetworkAddressTest
         throws UnknownHostException
     {
         System.out.println(InetAddress.getLocalHost().getHostName());
-        System.out.println(InetAddress.getLocalHost().getCanonicalHostName());
+        System.out.println(InetAddress.getLocalHost().getHostAddress());
     }
 }

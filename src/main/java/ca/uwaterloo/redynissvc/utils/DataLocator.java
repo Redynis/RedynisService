@@ -25,7 +25,7 @@ public class DataLocator
         {
             Jedis jedisInstance =
                 new Jedis(
-                    InetAddress.getLocalHost().getCanonicalHostName(),
+                    serviceConfig.getMetadataLayerHost(),
                     serviceConfig.getMetadataLayerPort()
                 );
             instance = new DataLocator(jedisInstance);
@@ -43,7 +43,7 @@ public class DataLocator
         throws IOException, InterruptedException
     {
         String hostname = null;
-        String localHostname = InetAddress.getLocalHost().getCanonicalHostName();
+        String localHostname = InetAddress.getLocalHost().getHostAddress();
 
         Set<String> hosts = locateDataHosts(key);
         if (null != hosts)

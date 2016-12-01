@@ -10,12 +10,15 @@ import ca.uwaterloo.redynissvc.utils.ConfigHelper;
 import ca.uwaterloo.redynissvc.utils.Constants;
 import ca.uwaterloo.redynissvc.utils.DataLocator;
 import ca.uwaterloo.redynissvc.utils.RedisHelper;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.Jedis;
@@ -42,7 +45,7 @@ public class RedynisService extends Application
     {
         String configFilePath = context.getInitParameter(Constants.CONFIGFILE_PARAM);
         serviceConfig = ConfigHelper.getInstance(configFilePath).getServiceConfig();
-        RedisHelper.init(InetAddress.getLocalHost().getCanonicalHostName(), serviceConfig.getDataLayerPort());
+        RedisHelper.init(InetAddress.getLocalHost().getHostAddress(), serviceConfig.getDataLayerPort());
     }
 
     @GET
@@ -91,14 +94,18 @@ public class RedynisService extends Application
         InternalServerError error;
         if (null == redisKey)
         {
-            error = new InternalServerError("Key cannot be null/empty", this.getClass().getName());
+            String msg = "Key cannot be null/empty";
+            log.error(msg);
+            error = new InternalServerError(msg, this.getClass().getName());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
         if (null == redisValue)
         {
-            error = new InternalServerError("Value cannot be null/empty", this.getClass().getName());
+            String msg = "Value cannot be null/empty";
+            log.error(msg);
+            error = new InternalServerError(msg, this.getClass().getName());
             return Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Constants.MAPPER.writeValueAsString(error)).build();
@@ -107,38 +114,48 @@ public class RedynisService extends Application
         DataLocator dataLocator = DataLocator.getInstance(serviceConfig);
         Set<String> hosts = dataLocator.locateDataHosts(redisKey);
 
+        log.debug("Hosts are " + hosts);
+
         if (null == hosts)
         {
+            log.debug("New key being posted");
             Integer totalAccessCount = 0;
             hosts = new HashSet<>();
-            hosts.add(InetAddress.getLocalHost().getCanonicalHostName());
+            hosts.add(InetAddress.getLocalHost().getHostAddress());
+
 
             UsageMetric usageMetric =
-                new UsageMetric(totalAccessCount, hosts, new HashMap<>(), new Date());
+                new UsageMetric(totalAccessCount, hosts, new HashMap<String, Integer>(), new Date());
             RedisHelper.setValue(redisKey, Constants.MAPPER.writeValueAsString(usageMetric));
-        }
-
-        log.debug("Hosts with key: " + hosts);
-        if (hosts.size() == 1 && hosts.iterator().next().equals(InetAddress.getLocalHost().getCanonicalHostName()))
-        {
-            RedisHelper.setValue(redisKey, redisValue);
-        }
-        else if (serviceConfig.getMasterPropagator().equals(InetAddress.getLocalHost().getCanonicalHostName()))
-        {
-            RedisHelper.setValueAtMultipleHosts(redisKey, redisValue, hosts, serviceConfig.getDataLayerPort());
         }
         else
         {
-            Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
-            HttpPost post = new HttpPost(Constants.SERVICE_ENDPOINT);
+            log.debug("Hosts with key: " + hosts);
+            if (hosts.size() == 1 && hosts.iterator().next().equals(InetAddress.getLocalHost().getHostAddress()))
+            {
+                log.debug("Setting value locally, (1 owner) " + hosts);
+                RedisHelper.setValue(redisKey, redisValue);
+            }
+            else if (serviceConfig.getMasterPropagator().equals(InetAddress.getLocalHost().getHostAddress()))
+            {
+                log.debug("Setting value locally, (master) " + hosts);
+                RedisHelper.setValueAtMultipleHosts(redisKey, redisValue, hosts, serviceConfig.getDataLayerPort());
+            }
+            else
+            {
+                log.debug("Setting value at multiple hosts " + hosts);
+                Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
+                HttpPost post =
+                    new HttpPost(
+                        Constants.SERVICE_ENDPOINT
+                            .replaceAll(Constants.KEY_PLACEHOLDER, redisKey)
+                            .replaceAll(Constants.VALUE_PLACEHOLDER, redisValue)
+                    );
 
-            List<NameValuePair> urlParameters = new ArrayList<>();
-            urlParameters.add(new BasicNameValuePair(Constants.KEY_PARAM, redisKey));
-            urlParameters.add(new BasicNameValuePair(Constants.VALUE_PARAM, redisValue));
-
-            post.setEntity(new UrlEncodedFormEntity(urlParameters));
-
-            httpClient.execute(post);
+                HttpResponse response = httpClient.execute(post);
+                log.debug(EntityUtils.toString(response.getEntity()));
+                assert response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+            }
         }
 
         return Response.ok(Constants.MAPPER.writeValueAsString(new PostSuccess(true))).build();
