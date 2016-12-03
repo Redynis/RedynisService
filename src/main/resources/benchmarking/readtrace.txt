@@ -1,3 +1,1 @@
-http://scs555pc:8080/RedynisService/redis?key=vineet
-http://ugster04.student.cs.uwaterloo.ca:8080/RedynisService/redis?key=vineet
-http://ugster02.student.cs.uwaterloo.ca:8080/RedynisService/redis?key=vineet
+http://localhost:8080/RedynisService/redis?key=vineet

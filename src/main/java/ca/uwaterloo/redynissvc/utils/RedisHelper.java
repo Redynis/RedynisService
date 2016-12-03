@@ -25,10 +25,12 @@ public class RedisHelper
 
     public synchronized static void
     setValueAtMultipleHosts(String redisKey, String redisValue, Set<String> hosts, Integer dataLayerPort)
+        throws InterruptedException
     {
         Jedis jedis;
         for (String host : hosts)
         {
+            Thread.sleep(Constants.INDUCED_LATENCY_MILLISEC); // inducing artificial latency
             jedis = new Jedis(host, dataLayerPort);
             jedis.set(redisKey, redisValue);
         }

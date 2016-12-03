@@ -1,1 +1,1 @@
-redis?key=vineet&value=john
+http://localhost:8080/RedynisService/redis?key=vineet&value=john

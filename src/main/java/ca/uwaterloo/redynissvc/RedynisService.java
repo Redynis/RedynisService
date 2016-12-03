@@ -68,8 +68,7 @@ public class RedynisService extends Application
         CaptureMetrics captureMetrics = new CaptureMetrics(serviceConfig, redisKey);
         captureMetrics.start();
 
-        DataLocator dataLocator = DataLocator.getInstance(serviceConfig);
-        String host = dataLocator.locateDataHost(redisKey);
+        String host = DataLocator.locateDataHost(redisKey, serviceConfig);
 
         String redisValue = null;
         if(null != host)
@@ -111,8 +110,7 @@ public class RedynisService extends Application
                     .entity(Constants.MAPPER.writeValueAsString(error)).build();
         }
 
-        DataLocator dataLocator = DataLocator.getInstance(serviceConfig);
-        Set<String> hosts = dataLocator.locateDataHosts(redisKey);
+        Set<String> hosts = DataLocator.locateDataHosts(redisKey, serviceConfig);
 
         log.debug("Hosts are " + hosts);
 

@@ -8,44 +8,19 @@ import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Set;
 
 public class DataLocator
 {
-    private Jedis jedis;
-    private static DataLocator instance;
-
     private static Logger log = LogManager.getLogger(DataLocator.class);
 
-    public static DataLocator getInstance(ServiceConfig serviceConfig)
-        throws UnknownHostException
-    {
-        if (null == instance)
-        {
-            Jedis jedisInstance =
-                new Jedis(
-                    serviceConfig.getMetadataLayerHost(),
-                    serviceConfig.getMetadataLayerPort()
-                );
-            instance = new DataLocator(jedisInstance);
-        }
-
-        return instance;
-    }
-
-    private DataLocator(Jedis jedis)
-    {
-        this.jedis = jedis;
-    }
-
-    public String locateDataHost(String key)
+    public static String locateDataHost(String key, ServiceConfig serviceConfig)
         throws IOException, InterruptedException
     {
         String hostname = null;
         String localHostname = InetAddress.getLocalHost().getHostAddress();
 
-        Set<String> hosts = locateDataHosts(key);
+        Set<String> hosts = locateDataHosts(key, serviceConfig);
         if (null != hosts)
         {
             if (hosts.contains(localHostname))
@@ -63,10 +38,11 @@ public class DataLocator
         return hostname;
     }
 
-    public Set<String> locateDataHosts(String key)
+    public static Set<String> locateDataHosts(String key, ServiceConfig serviceConfig)
         throws IOException
     {
         Set<String> hosts = null;
+        Jedis jedis = new Jedis(serviceConfig.getMetadataLayerHost(), serviceConfig.getMetadataLayerPort());
 
         String metadata = jedis.get(key);
         if (null != metadata)
@@ -74,6 +50,8 @@ public class DataLocator
             UsageMetric usageMetric = Constants.MAPPER.readValue(metadata, UsageMetric.class);
             hosts = usageMetric.getHosts();
         }
+
+        jedis.close();
 
         return hosts;
     }
