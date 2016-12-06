@@ -3,10 +3,10 @@
 This is a service wrapper on Redis that offers usage-based dynamic partitioning as part of the Redynis project
 
 ## Requirements
-* Java (1.8+)
+* Java (1.7+)
 * Gradle (2+)
 * Redis (3.0)
-* Apache Tomcat (9+) 
+* Apache Tomcat (8+) 
 
 ## Supported end-points
 
